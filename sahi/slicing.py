@@ -319,7 +319,7 @@ def slice_image(
         image_pil = read_image_as_pil(image)
         slice_file_path = str(Path(output_dir) / slice_file_name)
         # export sliced image
-        image_pil.save(slice_file_path, quality="keep")
+        image_pil.save(slice_file_path)
         image_pil.close()  # to fix https://github.com/obss/sahi/issues/565
         verboselog("sliced image path: " + slice_file_path)
 
@@ -395,13 +395,10 @@ def slice_image(
 
     # export slices if output directory is provided
     if output_file_name and output_dir:
-        conc_exec = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS)
-        conc_exec.map(
-            _export_single_slice,
-            sliced_image_result.images,
-            [output_dir] * len(sliced_image_result),
-            sliced_image_result.filenames,
-        )
+        for im, filename in zip(
+                sliced_image_result.images, sliced_image_result.filenames):
+            _export_single_slice(im, output_dir, filename)
+
 
     verboselog(
         "Num slices: " + str(n_ims) + " slice_height: " + str(slice_height) + " slice_width: " + str(slice_width)
